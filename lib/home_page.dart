@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
    initState() {
     fetchLocation();
     setState(() {
-      
+
     });
     super.initState();
   }
@@ -182,14 +182,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 } else if (snapshot.hasError) {
                   toast("connection error!");
                   return Center(child: Text(snapshot.error.toString()));
-                } else {
+                } else if(hospitals.isEmpty){
+                  return Expanded(child: Center(child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        children: [
+                          const Expanded(child: Text("There are no hospitals within your search range. Try expanding your search radius",style: TextStyle(color: Colors.pink),)),
+                          IconButton(onPressed: (){
+                            setState(() {
+                    
+                          });
+                            }, icon: const Icon(Icons.refresh))
+                        ],
+                      ),
+                    ),
+                  ),));
+                }else{
                   String name = "";
                   String address = "";
                   String image = "";
 
                   /*This loop creates a itemModal for each hospital by extracting specific fields from the data received from Google Places API*/
-                  List h = hospitals["places"];
-                  for (int i = 0; i < h.length; i++) {
+                  List places;
+                  try{
+                   places = hospitals["places"];
+                  }catch(e){
+                    places =[];
+                  }
+                  for (int i = 0; i < places.length; i++) {
                     try {
                       name = hospitals["places"][i]["displayName"]['text'];
                       address = hospitals["places"][i]["shortFormattedAddress"];
@@ -240,6 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
 * function to fetch data from Google Places
 * make sure that the apiKey variable in constants is set to a valid Google Places API key*/
 Future<String> getPlaces(Map request) async {
+  print(request);
   var url = Uri.https(
       'places.googleapis.com', 'v1/places:searchNearby', {'fields': "*",'key':apiKey});
   String queryString = jsonEncode(request);
@@ -255,12 +277,13 @@ Future<String> getPlaces(Map request) async {
     }
 
     if (response.statusCode == 200) {
-      hospitals = jsonDecode(response.body);
+        hospitals = jsonDecode(response.body);
     } else {
      toast("Google Places API responded with an error. This data is not live");
     }
     return "${response.statusCode}";
   } catch (e) {
+    print(e.toString());
     toast("Network error");
     return "300";
   }
