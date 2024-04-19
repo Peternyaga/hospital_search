@@ -284,7 +284,10 @@ Future<String> getPlaces(Map request) async {
     return "${response.statusCode}";
   } catch (e) {
     print(e.toString());
-    toast("Network error");
+    toast(e.toString());
+    toast(e.toString());
+    toast(e.toString());
+    toast(e.toString());
     return "300";
   }
 }
